@@ -10,8 +10,8 @@
       font-family: Arial, sans-serif;
       text-align: center;
       padding: 10px;
-      background: #fff9c4; /* Light yellow background as fallback */
-      color: #2e7d32;
+      background: #eb9c0b;
+      color: #2f11d7;
       margin: 0;
       position: relative;
       overflow: visible;
@@ -44,7 +44,7 @@
       margin: 5px auto;
       padding: 8px;
       font-size: 14px;
-      border: 2px solid #2e7d32;
+      border: 2px solid #1827cd;
       border-radius: 5px;
       background: #ffffff;
       color: #3e2723;
@@ -59,7 +59,7 @@
     }
     button {
       width: 120px;
-      background: #2e7d32;
+      background: #1827cd;
       color: #ffffff;
       border: none;
       cursor: pointer;
@@ -68,7 +68,7 @@
     #output, #prediction { 
       margin-top: 10px;
       font-size: 16px;
-      color: #2e7d32;
+      color: #1827cd;
       position: relative;
       z-index: 1;
     }
@@ -76,7 +76,7 @@
     .prediction-box {
       background: #ffffff;
       padding: 10px;
-      border: 2px solid #2e7d32;
+      border: 2px solid #1827cd;
       border-radius: 10px;
       width: 300px;
       margin: 10px auto;
@@ -93,13 +93,13 @@
       margin: 5px 0; 
       font-family: 'Courier New', monospace; 
       font-weight: bold; 
-      color: #2e7d32;
+      color: #1827cd;
       font-size: 16px;
     }
     .input-box {
       background: #ffffff;
       padding: 10px;
-      border: 2px dashed #2e7d32;
+      border: 2px dashed #1827cd;
       border-radius: 10px;
       width: 300px;
       margin: 10px auto;
@@ -118,7 +118,7 @@
       width: 100%;
       padding: 6px;
       margin-bottom: 5px;
-      border: 1px solid #2e7d32;
+      border: 1px solid #1827cd;
       border-radius: 5px;
       box-sizing: border-box;
       font-size: 14px;
@@ -163,17 +163,17 @@
       border-radius: 50%;
       box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.6);
       z-index: 2;
-      opacity: 0; /* Start hidden */
-      transition: opacity 1s ease-in-out; /* Smooth fade-in */
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
     }
     .prediction-image.visible {
-      opacity: 1; /* Fade in when visible */
+      opacity: 1;
     }
     .prediction-image .fallback {
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      border: 2px solid #2e7d32;
+      border: 2px solid #1827cd;
       background: #f0f0f0;
       display: flex;
       align-items: center;
@@ -228,13 +228,9 @@
   </div>
 
   <div class="jukebox-container">
-    <div class="jukebox-side" id="left-side">
-      <!-- Left side images will be dynamically added here -->
-    </div>
+    <div class="jukebox-side" id="left-side"></div>
     <img id="jukebox-img" src="Music Box.jpg" alt="Pan & Apollo’s Wild Jukebox">
-    <div class="jukebox-side" id="right-side">
-      <!-- Right side images will be dynamically added here -->
-    </div>
+    <div class="jukebox-side" id="right-side"></div>
   </div>
 
   <div id="output"></div>
@@ -293,27 +289,22 @@
     let datasets = JSON.parse(localStorage.getItem('jukeboxDatasets')) || defaultDatasets;
     const originalDatasets = JSON.parse(JSON.stringify(defaultDatasets));
 
-    // Constants for old prediction method
-    const fifthsCycle52 = [1, 8, 15, 22, 29, 36, 43, 50, 5, 12, 19, 26, 33, 40, 47, 2, 9, 16, 23, 30, 37, 44, 51, 6, 13, 20, 27, 34, 41, 48, 3, 10, 17, 24, 31, 38, 45, 52, 7, 14, 21, 28, 35, 42, 49, 4, 11, 18, 25, 32, 39, 46];
-    const fifthsCycle50 = fifthsCycle52.slice(0, 50);
-    const octavePositions = Array(53).fill(0).map((_, i) => i ? ((i - 1) % 12) + 1 : 0);
+    // Updated for 1-58
+    const fifthsCycle58 = [1,8,15,22,29,36,43,50,57, 2,9,16,23,30,37,44,51,58, 3,10,17,24,31,38,45,52, 4,11,18,25,32,39,46,53, 5,12,19,26,33,40,47,54, 6,13,20,27,34,41,48,55, 7,14,21,28,35,42,49,56];
+    const fifthsCycle50 = fifthsCycle58.slice(0, 50);
+    const octavePositions = Array(59).fill(0).map((_, i) => i ? ((i - 1) % 12) + 1 : 0);
     const isMajor = pos => [1, 3, 5, 7, 8, 10, 12].includes(pos);
 
     function saveDatasets() {
       localStorage.setItem('jukeboxDatasets', JSON.stringify(datasets));
-      console.log("Datasets saved to localStorage:", datasets);
     }
 
     function unlockAudio() {
       if (!audioUnlocked) {
         const context = new (window.AudioContext || window.webkitAudioContext)();
         context.resume().then(() => {
-          console.log("Audio context unlocked!");
           audioUnlocked = true;
           document.getElementById("output").innerHTML = "Audio unlocked! Ready to crank!";
-        }).catch(err => {
-          console.error("Audio unlock failed:", err);
-          document.getElementById("output").innerHTML = "Audio unlock failed. Please try clicking again.";
         });
       }
     }
@@ -337,7 +328,7 @@
       const numArray = newNumbers.split(" ").map(Number);
       const isPowerball = game === "powerball" || game === "powerballplus";
       const expectedLength = isPowerball ? 6 : 6;
-      const maxNum = isPowerball ? 50 : 52;
+      const maxNum = isPowerball ? 50 : 58;
       const maxPowerball = 20;
 
       if (numArray.length !== expectedLength || numArray.some(isNaN)) {
@@ -345,21 +336,19 @@
         return;
       }
       if (isPowerball) {
-        if (numArray.slice(0, 5).some(n => n < 1 || n > maxNum) || numArray[5] < 1 || numArray[5] > maxPowerball) {
-          alert(`Numbers must be 1-${maxNum} for main, 1-${maxPowerball} for Powerball!`);
+        if (numArray.slice(0,5).some(n => n<1 || n>50) || numArray[5]<1 || numArray[5]>20) {
+          alert("Main numbers 1-50, Powerball 1-20!");
           return;
         }
       } else {
-        if (numArray.some(n => n < 1 || n > maxNum)) {
-          alert(`Numbers must be 1-${maxNum}!`);
+        if (numArray.some(n => n<1 || n>58)) {
+          alert("Numbers must be 1-58!");
           return;
         }
       }
 
       datasets[game].unshift([newNumbers]);
-      if (datasets[game].length > 36) {
-        datasets[game].pop();
-      }
+      if (datasets[game].length > 36) datasets[game].pop();
       saveDatasets();
       loadDataset();
       document.getElementById("newNumbers").value = "";
@@ -377,35 +366,34 @@
     }
 
     function predictNextDraw(game) {
-      const draws = datasets[game].slice(0, 36); // Use 36 draws to match current code
+      const draws = datasets[game].slice(0, 36);
       const isPowerball = game === "powerball" || game === "powerballplus";
-      const maxNum = isPowerball ? 50 : 52;
+      const maxNum = isPowerball ? 50 : 58;
       const maxPowerball = 20;
       const freq = Array(maxNum + 1).fill(0);
       const pbFreq = isPowerball ? Array(maxPowerball + 1).fill(0) : null;
 
-      // Calculate frequencies with weighting (last 5 draws 2x)
+      // Weighting: older draws ×1, last 5 draws ×2
       draws.slice(5).forEach(([nums]) => {
         const numArray = nums.split(" ").map(Number);
         if (isPowerball) {
-          numArray.slice(0, 5).forEach(n => freq[n]++);
+          numArray.slice(0,5).forEach(n => freq[n]++);
           pbFreq[numArray[5]]++;
         } else {
           numArray.forEach(n => freq[n]++);
         }
       });
-      draws.slice(0, 5).forEach(([nums]) => {
+      draws.slice(0,5).forEach(([nums]) => {
         const numArray = nums.split(" ").map(Number);
         if (isPowerball) {
-          numArray.slice(0, 5).forEach(n => freq[n] += 2);
+          numArray.slice(0,5).forEach(n => freq[n] += 2);
           pbFreq[numArray[5]] += 2;
         } else {
           numArray.forEach(n => freq[n] += 2);
         }
       });
 
-      // Harmonic-geometric prediction
-      const cycle = isPowerball ? fifthsCycle50 : fifthsCycle52;
+      const cycle = isPowerball ? fifthsCycle50 : fifthsCycle58;
       const candidates = cycle.map(num => ({
         num,
         freq: freq[num],
@@ -414,14 +402,13 @@
       }));
 
       if (isPowerball) {
-        const mains = candidates.sort((a, b) => b.score - a.score).slice(0, 5).map(x => x.num).sort((a, b) => a - b);
-        const powerball = Array.from({ length: maxPowerball }, (_, i) => i + 1)
-          .sort((a, b) => pbFreq[b] - pbFreq[a])[0];
+        const mains = candidates.sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.num).sort((a,b)=>a-b);
+        const powerball = Array.from({length:20}, (_,i)=>i+1).sort((a,b)=>pbFreq[b]-pbFreq[a])[0];
         return [...mains, powerball];
       } else {
-        const majors = candidates.filter(x => x.isMajor).sort((a, b) => b.score - a.score).slice(0, 3).map(x => x.num);
-        const minors = candidates.filter(x => !x.isMajor).sort((a, b) => b.score - a.score).slice(0, 3).map(x => x.num);
-        return [...majors, ...minors].sort((a, b) => a - b);
+        const majors = candidates.filter(x=>x.isMajor).sort((a,b)=>b.score-a.score).slice(0,3).map(x=>x.num);
+        const minors = candidates.filter(x=>!x.isMajor).sort((a,b)=>b.score-a.score).slice(0,3).map(x=>x.num);
+        return [...majors, ...minors].sort((a,b)=>a-b);
       }
     }
 
@@ -431,191 +418,98 @@
       leftSide.innerHTML = "";
       rightSide.innerHTML = "";
 
-      console.log("Displaying prediction images for numbers:", predictedNums);
-
-      const allNums = predictedNums; // Combine all numbers for sequential display
-      console.log("All numbers:", allNums);
-
-      function createPredictionElement(num) {
-        const word = words[num - 1];
-        console.log(`Creating orb for number ${num}, word: ${word}, image: ${word}.jpg`);
-
-        const imageDiv = document.createElement("div");
-        imageDiv.className = "prediction-image";
-
-        const img = document.createElement("img");
-        img.src = `${word}.jpg`;
-        img.alt = word;
-        img.style.width = "100%";
-        img.style.height = "100%";
-        img.style.borderRadius = "50%";
-        img.style.objectFit = "cover";
-        img.style.border = "2px solid #2e7d32";
-
-        img.onerror = () => {
-          console.error(`Failed to load image: ${word}.jpg`);
-          img.style.display = "none";
-          const fallback = document.createElement("div");
-          fallback.className = "fallback";
-          fallback.textContent = word;
-          imageDiv.appendChild(fallback);
-        };
-
-        img.onload = () => {
-          console.log(`Successfully loaded image: ${word}.jpg`);
-        };
-
-        imageDiv.appendChild(img);
-
-        const numberOverlay = document.createElement("div");
-        numberOverlay.className = "number-overlay";
-        numberOverlay.textContent = num;
-        imageDiv.appendChild(numberOverlay);
-
-        return imageDiv;
-      }
-
-      // Display orbs sequentially with 2-second delays
-      allNums.forEach((num, index) => {
-        const delay = index * 2000; // 2 seconds per orb
+      predictedNums.forEach((num, index) => {
+        const delay = index * 2000;
         setTimeout(() => {
-          const element = createPredictionElement(num);
-          // Add to left or right side based on position
-          if (index < 3) {
-            leftSide.appendChild(element);
-          } else {
-            rightSide.appendChild(element);
-          }
-          // Trigger fade-in
-          setTimeout(() => {
-            element.classList.add("visible");
-          }, 10); // Small delay to ensure element is in DOM
-          console.log(`Orb ${num} displayed at ${delay}ms`);
+          const word = words[num - 1] || "unknown";
+          const imageDiv = document.createElement("div");
+          imageDiv.className = "prediction-image";
+
+          const img = document.createElement("img");
+          img.src = `${word}.jpg`;
+          img.alt = word;
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.borderRadius = "50%";
+          img.style.objectFit = "cover";
+          img.style.border = "2px solid #2e7d32";
+
+          img.onerror = () => {
+            img.style.display = "none";
+            const fallback = document.createElement("div");
+            fallback.className = "fallback";
+            fallback.textContent = word;
+            imageDiv.appendChild(fallback);
+          };
+
+          imageDiv.appendChild(img);
+
+          const overlay = document.createElement("div");
+          overlay.className = "number-overlay";
+          overlay.textContent = num;
+          imageDiv.appendChild(overlay);
+
+          if (index < 3) leftSide.appendChild(imageDiv);
+          else rightSide.appendChild(imageDiv);
+
+          setTimeout(() => imageDiv.classList.add("visible"), 10);
         }, delay);
       });
     }
 
     async function crankJukebox() {
-      try {
-        console.log("Crank button clicked!");
-
-        if (!audioUnlocked) {
-          document.getElementById("output").innerHTML = "Click the page to unlock audio!";
-          console.log("Audio not unlocked yet.");
-          return;
-        }
-
-        const game = document.getElementById("game").value;
-        const data = datasets[game].slice(0, 6);
-        const output = document.getElementById("output");
-        const predictionText = document.getElementById("prediction-text");
-        output.innerHTML = "";
-        console.log("Processing game:", game);
-
-        if (currentAudio) {
-          try {
-            currentAudio.pause();
-            currentAudio.currentTime = 0;
-            currentAudio = null;
-            console.log("Stopped previous audio.");
-          } catch (err) {
-            console.error("Error stopping audio:", err);
-          }
-        }
-        if (backgroundVideo) {
-          try {
-            backgroundVideo.pause();
-            backgroundVideo.currentTime = 0;
-            backgroundVideo.style.display = "none";
-            console.log("Stopped previous video.");
-          } catch (err) {
-            console.error("Error stopping video:", err);
-          }
-        }
-
-        const randomIndex = Math.floor(Math.random() * mp3Tunes.length);
-        const randomTune = mp3Tunes[randomIndex];
-        console.log("Random index:", randomIndex, "Selected tune:", randomTune);
-        try {
-          currentAudio = new Audio(randomTune);
-          currentAudio.play()
-            .then(() => {
-              console.log("Audio playing:", randomTune);
-              backgroundVideo.style.display = "block";
-              backgroundVideo.play()
-                .then(() => {
-                  console.log("Background video playing: Firefly.MP4");
-                })
-                .catch(err => {
-                  console.error("Video playback failed:", err);
-                  output.innerHTML += "<br>Video playback failed. Continuing...";
-                  proceedWithCrank();
-                });
-            })
-            .catch(err => {
-              console.error("Audio playback failed:", err);
-              output.innerHTML += "<br>Audio playback failed. Continuing...";
-              proceedWithCrank();
-            });
-
-          setTimeout(() => {
-            if (currentAudio) {
-              try {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio = null;
-                console.log("Audio stopped after 15 seconds.");
-              } catch (err) {
-                console.error("Error stopping audio after 15 seconds:", err);
-              }
-            }
-            if (backgroundVideo) {
-              try {
-                backgroundVideo.pause();
-                backgroundVideo.currentTime = 0;
-                backgroundVideo.style.display = "none";
-                console.log("Video stopped after 15 seconds.");
-              } catch (err) {
-                console.error("Error stopping video after 15 seconds:", err);
-              }
-            }
-          }, 15000);
-        } catch (err) {
-          console.error("Error with audio or video setup:", err);
-          output.innerHTML += "<br>Error playing audio or video. Continuing...";
-          proceedWithCrank();
-        }
-
-        function proceedWithCrank() {
-          console.log("Displaying tune lines...");
-          for (const [nums] of data) {
-            const numArray = nums.split(" ").map(Number);
-            const tune = numArray.map(num => words[num - 1]).join(" ");
-            console.log("Tune line:", tune);
-
-            const div = document.createElement("div");
-            div.className = "tune-line";
-            div.textContent = tune;
-            output.appendChild(div);
-          }
-
-          console.log("Predicting next draw...");
-          const predictedNums = predictNextDraw(game);
-          console.log("Predicted numbers:", predictedNums);
-          predictionText.textContent = predictedNums.join(" ");
-          console.log("Calling displayPredictionImages...");
-          displayPredictionImages(predictedNums);
-        }
-
-        if (currentAudio) {
-          currentAudio.onplaying = proceedWithCrank;
-        }
-      } catch (err) {
-        console.error("Error in crankJukebox:", err);
-        document.getElementById("output").innerHTML = "An error occurred. Check the console for details.";
+      if (!audioUnlocked) {
+        document.getElementById("output").innerHTML = "Click the page to unlock audio!";
+        return;
       }
+
+      const game = document.getElementById("game").value;
+      const data = datasets[game].slice(0, 6);
+      const output = document.getElementById("output");
+      const predictionText = document.getElementById("prediction-text");
+      output.innerHTML = "";
+
+      // Stop previous media
+      if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+      if (backgroundVideo) { backgroundVideo.pause(); backgroundVideo.style.display = "none"; }
+
+      const randomTune = mp3Tunes[Math.floor(Math.random() * mp3Tunes.length)];
+      currentAudio = new Audio(randomTune);
+
+      try {
+        await currentAudio.play();
+        backgroundVideo.style.display = "block";
+        backgroundVideo.play().catch(()=>{});
+      } catch(e) {
+        console.log("Media playback skipped");
+      }
+
+      // Auto-stop after 15s
+      setTimeout(() => {
+        if (currentAudio) currentAudio.pause();
+        if (backgroundVideo) {
+          backgroundVideo.pause();
+          backgroundVideo.style.display = "none";
+        }
+      }, 15000);
+
+      // Display tunes
+      for (const [nums] of data) {
+        const numArray = nums.split(" ").map(Number);
+        const tune = numArray.map(n => words[n-1] || n).join(" ");
+        const div = document.createElement("div");
+        div.className = "tune-line";
+        div.textContent = tune;
+        output.appendChild(div);
+      }
+
+      // Predict & show
+      const predictedNums = predictNextDraw(game);
+      predictionText.textContent = predictedNums.join(" ");
+      displayPredictionImages(predictedNums);
     }
 
+    // Initial load
     loadDataset();
   </script>
 </body>
