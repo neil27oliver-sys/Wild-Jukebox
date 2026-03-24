@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wild Jukebox</title>
+  <link rel="icon" type="image/jpg" href="Music Box.jpg">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 10px;
+      background: #fff9c4; /* Light yellow background as fallback */
+      color: #2e7d32;
+      margin: 0;
+      position: relative;
+      overflow: visible;
+    }
+    #background-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      display: none;
+    }
+    h1 { 
+      color: #3e2723; 
+      margin: 5px 0;
+      font-size: 24px;
+      position: relative;
+      z-index: 1;
+    }
+    p { 
+      margin: 0 0 10px;
+      font-size: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    select, textarea, button, input {
+      display: block;
+      margin: 5px auto;
+      padding: 8px;
+      font-size: 14px;
+      border: 2px solid #2e7d32;
+      border-radius: 5px;
+      background: #ffffff;
+      color: #3e2723;
+      position: relative;
+      z-index: 1;
+    }
+    select { width: 300px; }
+    textarea {
+      width: 300px;
+      height: 100px;
+      resize: vertical;
+    }
+    button {
+      width: 120px;
+      background: #2e7d32;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover { background: #3e2723; }
+    #output, #prediction { 
+      margin-top: 10px;
+      font-size: 16px;
+      color: #2e7d32;
+      position: relative;
+      z-index: 1;
+    }
+    .tune-line { margin: 2px 0; }
+    .prediction-box {
+      background: #ffffff;
+      padding: 10px;
+      border: 2px solid #2e7d32;
+      border-radius: 10px;
+      width: 300px;
+      margin: 10px auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+    }
+    .prediction-box h3 { 
+      margin: 0 0 5px;
+      color: #3e2723;
+      font-size: 18px;
+    }
+    .prediction-box p { 
+      margin: 5px 0; 
+      font-family: 'Courier New', monospace; 
+      font-weight: bold; 
+      color: #2e7d32;
+      font-size: 16px;
+    }
+    .input-box {
+      background: #ffffff;
+      padding: 10px;
+      border: 2px dashed #2e7d32;
+      border-radius: 10px;
+      width: 300px;
+      margin: 10px auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+    }
+    .input-box label { 
+      display: block; 
+      margin-bottom: 5px; 
+      font-weight: bold; 
+      color: #3e2723;
+      font-size: 14px;
+    }
+    .input-box input {
+      width: 100%;
+      padding: 6px;
+      margin-bottom: 5px;
+      border: 1px solid #2e7d32;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+    .input-box button { 
+      display: inline-block; 
+      width: 100px;
+      margin: 0 5px;
+      font-size: 14px;
+    }
+    #jukebox-img { 
+      max-width: 200px;
+      margin: 0; 
+      display: block;
+    }
+    footer { 
+      margin-top: 10px;
+      font-size: 12px;
+      color: #3e2723;
+      position: relative;
+      z-index: 1;
+    }
+    .jukebox-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px 0;
+      position: relative;
+      z-index: 1;
+    }
+    .jukebox-side {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 10px;
+    }
+    .prediction-image {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      margin: 5px 0;
+      border-radius: 50%;
+      box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.6);
+      z-index: 2;
+      opacity: 0; /* Start hidden */
+      transition: opacity 1s ease-in-out; /* Smooth fade-in */
+    }
+    .prediction-image.visible {
+      opacity: 1; /* Fade in when visible */
+    }
+    .prediction-image .fallback {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 2px solid #2e7d32;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #3e2723;
+      text-align: center;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+    .prediction-image .number-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ffffff;
+      font-size: 22px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.5);
+      padding: 4px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body onclick="unlockAudio()">
+  <video id="background-video" muted loop>
+    <source src="Firefly.MP4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <h1>Pan & Apollo’s Wild Jukebox</h1>
+  <p>Click anywhere to unlock audio, then crank away!</p>
+
+  <select id="game" onchange="loadDataset()">
+    <option value="lotto">Lotto (6 numbers, 1-52)</option>
+    <option value="plus1">Lotto Plus 1 (6 numbers, 1-52)</option>
+    <option value="plus2">Lotto Plus 2 (6 numbers, 1-52)</option>
+    <option value="powerball">Powerball (5 numbers 1-50 + 1 Powerball 1-20)</option>
+    <option value="powerballplus">Powerball Plus (5 numbers 1-50 + 1 Powerball 1-20)</option>
+  </select>
+
+  <textarea id="input" readonly></textarea>
+
+  <button onclick="crankJukebox()">Crank It!</button>
+
+  <div class="input-box">
+    <label>Add Latest Draw</label>
+    <input type="text" id="newNumbers" placeholder="e.g., 1 2 3 4 5 6">
+    <button onclick="addDraw()">Add Draw</button>
+    <button onclick="rollbackDraw()">Rollback</button>
+  </div>
+
+  <div class="jukebox-container">
+    <div class="jukebox-side" id="left-side">
+      <!-- Left side images will be dynamically added here -->
+    </div>
+    <img id="jukebox-img" src="Music Box.jpg" alt="Pan & Apollo’s Wild Jukebox">
+    <div class="jukebox-side" id="right-side">
+      <!-- Right side images will be dynamically added here -->
+    </div>
+  </div>
+
+  <div id="output"></div>
+  <div class="prediction-box" id="prediction">
+    <h3>Predicted Next Draw</h3>
+    <p id="prediction-text">Click "Crank It!" to see the prediction</p>
+  </div>
+
+  <footer>
+    This application was developed by suggestion of Pan and Apollo.<br>
+    Pan: God of the wild, shepherds, flocks, rustic music, and impromptus, tied to nature and fertility.<br>
+    Apollo: God of music, poetry, art, oracles, archery, healing, and the sun.
+  </footer>
+
+  <script>
+    const words = ["breeze", "storm", "river", "wave", "cloud", "rain", "wind", "mist", "leaf", "tree",
+      "branch", "root", "stone", "cliff", "hill", "peak", "valley", "ridge", "cave", "rock", "sand",
+      "dust", "earth", "sea", "lake", "pond", "brook", "fog", "snow", "ice", "frost", "dew", "tide",
+      "shore", "dune", "field", "plain", "meadow", "forest", "grove", "wood", "glade", "swamp",
+      "marsh", "heath", "moor", "tundra", "desert", "jungle", "savanna", "prairie", "canyon"];
+
+    const mp3Tunes = ["HARP.MP3", "HARP2.MP3", "FLUTE.MP3", "FLUTE2.MP3"];
+    let currentAudio = null;
+    let audioUnlocked = false;
+    const backgroundVideo = document.getElementById("background-video");
+
+    const defaultDatasets = {
+      lotto: [
+        ["12 18 21 25 27 38"], ["3 12 16 18 31 51"], ["2 3 17 27 29 37"], ["6 23 24 32 39 48"],
+        ["7 12 24 32 39 48"], ["7 19 23 27 31 52"], ["2 8 37 45 48 51"], ["8 12 20 22 49 50"],
+        ["27 36 38 44 45 47"], ["4 7 12 13 24 51"], ["11 13 32 43 50 51"], ["5 9 25 39 41 50"],
+        ["3 9 23 41 42 48"], ["1 4 14 17 20 34"], ["5 7 18 28 30 42"], ["14 15 26 41 42 52"],
+        ["6 11 13 24 32 44"], ["23 26 28 29 39 51"], ["6 9 23 45 46 48"], ["13 20 25 33 38 40"],
+        ["4 9 10 35 37 41"], ["1 10 20 22 37 42"], ["16 22 24 34 38 49"], ["3 22 23 25 33 52"],
+        ["3 7 18 23 24 52"], ["7 18 25 28 29 44"], ["6 9 23 30 33 41"], ["5 7 28 30 38 45"],
+        ["6 8 11 39 42 47"], ["6 11 19 24 50 52"], ["10 20 30 47 49 50"], ["4 14 19 20 21 48"],
+        ["7 24 34 37 40 52"], ["5 8 13 15 39 43"], ["3 9 10 16 22 25"], ["2 3 22 33 36 41"]
+      ],
+      plus1: [
+        ["1 16 19 24 31 44"], ["16 25 32 39 45 52"], ["4 7 18 21 39 42"], ["3 26 33 38 39 41"],
+        ["10 15 17 27 29 47"], ["6 9 18 22 25 27"], ["33 36 38 40 46 49"], ["2 3 10 20 27 44"],
+        ["6 17 23 28 36 49"], ["13 16 36 49 51 52"], ["8 21 22 39 47 52"], ["3 14 20 30 35 42"],
+        ["7 8 16 40 42 49"], ["1 15 28 30 33 50"], ["8 14 21 32 37 49"], ["4 8 14 17 24 29"],
+        ["4 6 13 21 37 44"], ["1 21 27 28 43 49"], ["5 13 25 34 44 50"], ["2 7 9 23 46 48"],
+        ["1 12 21 24 25 35"], ["1 6 26 34 38 48"], ["4 8 9 10 30 38"], ["2 7 20 26 29 38"],
+        ["23 32 38 39 46 50"], ["7 21 32 36 38 51"], ["3 7 12 24 31 49"], ["2 5 26 39 42 43"],
+        ["24 29 32 34 37 50"], ["5 18 20 25 29 40"], ["3 5 15 16 40 50"], ["5 11 22 41 43 52"],
+        ["4 8 13 27 48 52"], ["12 21 31 35 36 43"], ["10 11 21 25 34 36"], ["35 37 39 40 43 51"]
+      ],
+      plus2: [
+        ["2 10 19 24 38 41"], ["7 33 34 38 40 47"], ["1 3 5 13 18 22"], ["8 19 23 38 40 42"],
+        ["1 4 10 13 28 33"], ["8 14 16 42 43 52"], ["1 10 23 29 34 47"], ["4 8 27 31 35 43"],
+        ["25 26 31 33 34 45"], ["3 23 27 44 45 47"], ["1 8 14 21 26 29"], ["9 25 33 37 40 51"],
+        ["9 10 16 26 31 38"], ["18 21 35 39 41 51"], ["14 22 24 32 42 50"], ["2 8 29 32 37 46"],
+        ["5 6 15 21 38 45"], ["7 24 29 35 44 51"], ["20 22 25 37 39 52"], ["1 3 6 14 17 41"],
+        ["1 5 14 16 33 40"], ["9 16 19 26 40 48"], ["26 27 33 36 39 44"], ["11 15 26 31 37 39"],
+        ["11 19 28 33 34 47"], ["10 16 29 41 46 51"], ["15 29 35 43 48 49"], ["3 5 8 9 12 22"],
+        ["4 7 10 17 21 51"], ["2 16 23 24 34 51"], ["3 9 10 18 30 51"], ["11 16 31 47 50 52"],
+        ["15 17 20 21 31 42"], ["14 17 21 22 26 38"], ["1 16 26 39 41 47"], ["5 15 36 38 39 42"]
+      ],
+      powerball: [
+        ["22 32 38 39 40 10"], ["9 16 24 32 50 19"], ["15 22 29 35 43 10"], ["7 32 38 45 46 2"],
+        ["8 28 30 44 48 2"], ["2 5 32 40 45 9"], ["14 23 31 33 38 7"], ["2 26 30 42 47 3"],
+        ["4 7 11 24 39 3"], ["2 9 19 22 24 19"], ["15 16 37 43 44 11"], ["2 4 5 19 31 15"],
+        ["4 6 15 20 50 3"], ["2 20 28 34 45 3"], ["16 21 30 34 47 18"], ["4 12 24 40 49 4"],
+        ["7 20 21 35 45 10"], ["3 8 19 29 46 19"], ["2 11 14 22 41 9"], ["7 19 22 42 47 4"],
+        ["14 26 36 42 49 16"], ["6 8 13 37 45 7"], ["10 16 20 41 49 7"], ["17 38 45 46 50 16"],
+        ["2 16 19 27 42 17"], ["1 14 17 31 49 2"], ["1 11 18 23 37 3"], ["19 31 37 42 43 6"],
+        ["1 10 12 34 37 17"], ["1 6 20 27 46 13"], ["1 6 16 37 45 6"], ["6 15 34 35 45 17"],
+        ["8 10 14 41 50 9"], ["5 7 22 25 50 3"], ["7 22 26 36 44 12"], ["10 13 17 18 20 17"]
+      ],
+      powerballplus: [
+        ["2 5 32 40 45 9"], ["14 23 31 33 38 7"], ["2 26 30 42 47 3"], ["4 7 11 24 39 3"],
+        ["2 9 19 22 24 19"], ["15 16 37 43 44 11"], ["2 4 5 19 31 15"], ["4 6 15 20 50 3"],
+        ["2 20 28 34 45 3"], ["16 21 30 34 47 18"], ["4 12 24 40 49 4"], ["7 20 21 35 45 10"],
+        ["3 8 19 29 46 19"], ["2 11 14 22 41 9"], ["7 19 22 42 47 4"], ["14 26 36 42 49 16"],
+        ["6 8 13 37 45 7"], ["10 16 20 41 49 7"], ["17 38 45 46 50 16"], ["2 16 19 27 42 17"],
+        ["1 14 17 31 49 2"], ["1 11 18 23 37 3"], ["19 31 37 42 43 6"], ["1 10 12 34 37 17"],
+        ["1 6 20 27 46 13"], ["1 6 16 37 45 6"], ["6 15 34 35 45 17"], ["8 10 14 41 50 9"],
+        ["5 7 22 25 50 3"], ["7 22 26 36 44 12"], ["10 13 17 18 20 17"], ["6 23 27 29 45 16"],
+        ["6 25 33 36 38 17"], ["2 22 23 46 49 19"], ["6 20 38 44 46 8"], ["14 26 32 38 40 13"]
+      ]
+    };
+
+    let datasets = JSON.parse(localStorage.getItem('jukeboxDatasets')) || defaultDatasets;
+    const originalDatasets = JSON.parse(JSON.stringify(defaultDatasets));
+
+    // Constants for old prediction method
+    const fifthsCycle52 = [1, 8, 15, 22, 29, 36, 43, 50, 5, 12, 19, 26, 33, 40, 47, 2, 9, 16, 23, 30, 37, 44, 51, 6, 13, 20, 27, 34, 41, 48, 3, 10, 17, 24, 31, 38, 45, 52, 7, 14, 21, 28, 35, 42, 49, 4, 11, 18, 25, 32, 39, 46];
+    const fifthsCycle50 = fifthsCycle52.slice(0, 50);
+    const octavePositions = Array(53).fill(0).map((_, i) => i ? ((i - 1) % 12) + 1 : 0);
+    const isMajor = pos => [1, 3, 5, 7, 8, 10, 12].includes(pos);
+
+    function saveDatasets() {
+      localStorage.setItem('jukeboxDatasets', JSON.stringify(datasets));
+      console.log("Datasets saved to localStorage:", datasets);
+    }
+
+    function unlockAudio() {
+      if (!audioUnlocked) {
+        const context = new (window.AudioContext || window.webkitAudioContext)();
+        context.resume().then(() => {
+          console.log("Audio context unlocked!");
+          audioUnlocked = true;
+          document.getElementById("output").innerHTML = "Audio unlocked! Ready to crank!";
+        }).catch(err => {
+          console.error("Audio unlock failed:", err);
+          document.getElementById("output").innerHTML = "Audio unlock failed. Please try clicking again.";
+        });
+      }
+    }
+
+    function loadDataset() {
+      const game = document.getElementById("game").value;
+      const data = datasets[game];
+      const text = data.map(([nums]) => nums).join("\n");
+      document.getElementById("input").value = text;
+    }
+
+    function addDraw() {
+      const game = document.getElementById("game").value;
+      const newNumbers = document.getElementById("newNumbers").value.trim();
+
+      if (!newNumbers) {
+        alert("Please enter numbers!");
+        return;
+      }
+
+      const numArray = newNumbers.split(" ").map(Number);
+      const isPowerball = game === "powerball" || game === "powerballplus";
+      const expectedLength = isPowerball ? 6 : 6;
+      const maxNum = isPowerball ? 50 : 52;
+      const maxPowerball = 20;
+
+      if (numArray.length !== expectedLength || numArray.some(isNaN)) {
+        alert(`Enter exactly ${expectedLength} valid numbers!`);
+        return;
+      }
+      if (isPowerball) {
+        if (numArray.slice(0, 5).some(n => n < 1 || n > maxNum) || numArray[5] < 1 || numArray[5] > maxPowerball) {
+          alert(`Numbers must be 1-${maxNum} for main, 1-${maxPowerball} for Powerball!`);
+          return;
+        }
+      } else {
+        if (numArray.some(n => n < 1 || n > maxNum)) {
+          alert(`Numbers must be 1-${maxNum}!`);
+          return;
+        }
+      }
+
+      datasets[game].unshift([newNumbers]);
+      if (datasets[game].length > 36) {
+        datasets[game].pop();
+      }
+      saveDatasets();
+      loadDataset();
+      document.getElementById("newNumbers").value = "";
+    }
+
+    function rollbackDraw() {
+      const game = document.getElementById("game").value;
+      if (datasets[game].length > originalDatasets[game].length) {
+        datasets[game].shift();
+        saveDatasets();
+        loadDataset();
+      } else {
+        alert("Nothing to rollback!");
+      }
+    }
+
+    function predictNextDraw(game) {
+      const draws = datasets[game].slice(0, 36); // Use 36 draws to match current code
+      const isPowerball = game === "powerball" || game === "powerballplus";
+      const maxNum = isPowerball ? 50 : 52;
+      const maxPowerball = 20;
+      const freq = Array(maxNum + 1).fill(0);
+      const pbFreq = isPowerball ? Array(maxPowerball + 1).fill(0) : null;
+
+      // Calculate frequencies with weighting (last 5 draws 2x)
+      draws.slice(5).forEach(([nums]) => {
+        const numArray = nums.split(" ").map(Number);
+        if (isPowerball) {
+          numArray.slice(0, 5).forEach(n => freq[n]++);
+          pbFreq[numArray[5]]++;
+        } else {
+          numArray.forEach(n => freq[n]++);
+        }
+      });
+      draws.slice(0, 5).forEach(([nums]) => {
+        const numArray = nums.split(" ").map(Number);
+        if (isPowerball) {
+          numArray.slice(0, 5).forEach(n => freq[n] += 2);
+          pbFreq[numArray[5]] += 2;
+        } else {
+          numArray.forEach(n => freq[n] += 2);
+        }
+      });
+
+      // Harmonic-geometric prediction
+      const cycle = isPowerball ? fifthsCycle50 : fifthsCycle52;
+      const candidates = cycle.map(num => ({
+        num,
+        freq: freq[num],
+        isMajor: isMajor(octavePositions[num]),
+        score: freq[num] + (isMajor(octavePositions[num]) ? 1 : 0)
+      }));
+
+      if (isPowerball) {
+        const mains = candidates.sort((a, b) => b.score - a.score).slice(0, 5).map(x => x.num).sort((a, b) => a - b);
+        const powerball = Array.from({ length: maxPowerball }, (_, i) => i + 1)
+          .sort((a, b) => pbFreq[b] - pbFreq[a])[0];
+        return [...mains, powerball];
+      } else {
+        const majors = candidates.filter(x => x.isMajor).sort((a, b) => b.score - a.score).slice(0, 3).map(x => x.num);
+        const minors = candidates.filter(x => !x.isMajor).sort((a, b) => b.score - a.score).slice(0, 3).map(x => x.num);
+        return [...majors, ...minors].sort((a, b) => a - b);
+      }
+    }
+
+    function displayPredictionImages(predictedNums) {
+      const leftSide = document.getElementById("left-side");
+      const rightSide = document.getElementById("right-side");
+      leftSide.innerHTML = "";
+      rightSide.innerHTML = "";
+
+      console.log("Displaying prediction images for numbers:", predictedNums);
+
+      const allNums = predictedNums; // Combine all numbers for sequential display
+      console.log("All numbers:", allNums);
+
+      function createPredictionElement(num) {
+        const word = words[num - 1];
+        console.log(`Creating orb for number ${num}, word: ${word}, image: ${word}.jpg`);
+
+        const imageDiv = document.createElement("div");
+        imageDiv.className = "prediction-image";
+
+        const img = document.createElement("img");
+        img.src = `${word}.jpg`;
+        img.alt = word;
+        img.style.width = "100%";
+        img.style.height = "100%";
+        img.style.borderRadius = "50%";
+        img.style.objectFit = "cover";
+        img.style.border = "2px solid #2e7d32";
+
+        img.onerror = () => {
+          console.error(`Failed to load image: ${word}.jpg`);
+          img.style.display = "none";
+          const fallback = document.createElement("div");
+          fallback.className = "fallback";
+          fallback.textContent = word;
+          imageDiv.appendChild(fallback);
+        };
+
+        img.onload = () => {
+          console.log(`Successfully loaded image: ${word}.jpg`);
+        };
+
+        imageDiv.appendChild(img);
+
+        const numberOverlay = document.createElement("div");
+        numberOverlay.className = "number-overlay";
+        numberOverlay.textContent = num;
+        imageDiv.appendChild(numberOverlay);
+
+        return imageDiv;
+      }
+
+      // Display orbs sequentially with 2-second delays
+      allNums.forEach((num, index) => {
+        const delay = index * 2000; // 2 seconds per orb
+        setTimeout(() => {
+          const element = createPredictionElement(num);
+          // Add to left or right side based on position
+          if (index < 3) {
+            leftSide.appendChild(element);
+          } else {
+            rightSide.appendChild(element);
+          }
+          // Trigger fade-in
+          setTimeout(() => {
+            element.classList.add("visible");
+          }, 10); // Small delay to ensure element is in DOM
+          console.log(`Orb ${num} displayed at ${delay}ms`);
+        }, delay);
+      });
+    }
+
+    async function crankJukebox() {
+      try {
+        console.log("Crank button clicked!");
+
+        if (!audioUnlocked) {
+          document.getElementById("output").innerHTML = "Click the page to unlock audio!";
+          console.log("Audio not unlocked yet.");
+          return;
+        }
+
+        const game = document.getElementById("game").value;
+        const data = datasets[game].slice(0, 6);
+        const output = document.getElementById("output");
+        const predictionText = document.getElementById("prediction-text");
+        output.innerHTML = "";
+        console.log("Processing game:", game);
+
+        if (currentAudio) {
+          try {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+            console.log("Stopped previous audio.");
+          } catch (err) {
+            console.error("Error stopping audio:", err);
+          }
+        }
+        if (backgroundVideo) {
+          try {
+            backgroundVideo.pause();
+            backgroundVideo.currentTime = 0;
+            backgroundVideo.style.display = "none";
+            console.log("Stopped previous video.");
+          } catch (err) {
+            console.error("Error stopping video:", err);
+          }
+        }
+
+        const randomIndex = Math.floor(Math.random() * mp3Tunes.length);
+        const randomTune = mp3Tunes[randomIndex];
+        console.log("Random index:", randomIndex, "Selected tune:", randomTune);
+        try {
+          currentAudio = new Audio(randomTune);
+          currentAudio.play()
+            .then(() => {
+              console.log("Audio playing:", randomTune);
+              backgroundVideo.style.display = "block";
+              backgroundVideo.play()
+                .then(() => {
+                  console.log("Background video playing: Firefly.MP4");
+                })
+                .catch(err => {
+                  console.error("Video playback failed:", err);
+                  output.innerHTML += "<br>Video playback failed. Continuing...";
+                  proceedWithCrank();
+                });
+            })
+            .catch(err => {
+              console.error("Audio playback failed:", err);
+              output.innerHTML += "<br>Audio playback failed. Continuing...";
+              proceedWithCrank();
+            });
+
+          setTimeout(() => {
+            if (currentAudio) {
+              try {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+                console.log("Audio stopped after 15 seconds.");
+              } catch (err) {
+                console.error("Error stopping audio after 15 seconds:", err);
+              }
+            }
+            if (backgroundVideo) {
+              try {
+                backgroundVideo.pause();
+                backgroundVideo.currentTime = 0;
+                backgroundVideo.style.display = "none";
+                console.log("Video stopped after 15 seconds.");
+              } catch (err) {
+                console.error("Error stopping video after 15 seconds:", err);
+              }
+            }
+          }, 15000);
+        } catch (err) {
+          console.error("Error with audio or video setup:", err);
+          output.innerHTML += "<br>Error playing audio or video. Continuing...";
+          proceedWithCrank();
+        }
+
+        function proceedWithCrank() {
+          console.log("Displaying tune lines...");
+          for (const [nums] of data) {
+            const numArray = nums.split(" ").map(Number);
+            const tune = numArray.map(num => words[num - 1]).join(" ");
+            console.log("Tune line:", tune);
+
+            const div = document.createElement("div");
+            div.className = "tune-line";
+            div.textContent = tune;
+            output.appendChild(div);
+          }
+
+          console.log("Predicting next draw...");
+          const predictedNums = predictNextDraw(game);
+          console.log("Predicted numbers:", predictedNums);
+          predictionText.textContent = predictedNums.join(" ");
+          console.log("Calling displayPredictionImages...");
+          displayPredictionImages(predictedNums);
+        }
+
+        if (currentAudio) {
+          currentAudio.onplaying = proceedWithCrank;
+        }
+      } catch (err) {
+        console.error("Error in crankJukebox:", err);
+        document.getElementById("output").innerHTML = "An error occurred. Check the console for details.";
+      }
+    }
+
+    loadDataset();
+  </script>
+</body>
+</html>
