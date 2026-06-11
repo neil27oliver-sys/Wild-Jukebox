@@ -3,41 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pan & Apollo’s Wild Jukebox</title>
+  <title>Wild Jukebox</title>
+  <link rel="icon" href="JUKEBOX.jpg">
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 10px; background: #fff9c4; color: #2e7d32; margin: 0; position: relative; overflow: visible; }
-    #background-video { position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; display: none; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 10px;
+      background: #dda108;
+      color: #2f11d7;
+      margin: 0;
+      position: relative;
+      overflow: visible;
+    }
+    #background-video {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      display: none;
+    }
     h1 { color: #3e2723; margin: 5px 0; font-size: 24px; }
     p { margin: 0 0 10px; font-size: 14px; }
-    select, textarea, button, input { display: block; margin: 5px auto; padding: 8px; font-size: 14px; border: 2px solid #2e7d32; border-radius: 5px; background: #ffffff; color: #3e2723; }
+    select, textarea, button, input {
+      display: block; margin: 5px auto; padding: 8px;
+      font-size: 14px; border: 2px solid #1827cd; border-radius: 5px;
+      background: #ffffff; color: #3e2723;
+    }
     select { width: 340px; }
     textarea { width: 300px; height: 120px; resize: vertical; }
-    button { width: 130px; background: #2e7d32; color: #ffffff; border: none; cursor: pointer; }
+    button {
+      width: 130px; background: #1827cd; color: #ffffff;
+      border: none; cursor: pointer;
+    }
     button:hover { background: #3e2723; }
-    #output, #prediction { margin-top: 10px; font-size: 16px; color: #2e7d32; }
-    .prediction-box, .input-box { background: #ffffff; padding: 10px; border: 2px solid #2e7d32; border-radius: 10px; width: 300px; margin: 10px auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    #output, #prediction { margin-top: 10px; font-size: 16px; color: #1827cd; }
+    .tune-line { margin: 2px 0; }
+    .prediction-box, .input-box {
+      background: #ffffff; padding: 10px; border: 2px solid #1827cd;
+      border-radius: 10px; width: 300px; margin: 10px auto;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
     .prediction-box h3 { margin: 0 0 5px; color: #3e2723; font-size: 18px; }
     .input-box label { display: block; margin-bottom: 5px; font-weight: bold; color: #3e2723; }
     .input-box input { width: 100%; box-sizing: border-box; }
     .jukebox-container { display: flex; justify-content: center; align-items: center; margin: 10px 0; }
-    .prediction-image { position: relative; width: 90px; height: 90px; margin: 5px 0; border-radius: 50%; box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.6); opacity: 0; transition: opacity 1s ease-in-out; }
+    .prediction-image {
+      position: relative; width: 90px; height: 90px; margin: 5px 0;
+      border-radius: 50%; box-shadow: 0 0 10px 3px rgba(255, 215, 0, 0.6);
+      opacity: 0; transition: opacity 1s ease-in-out;
+    }
     .prediction-image.visible { opacity: 1; }
-    .fallback { width: 100%; height: 100%; border-radius: 50%; border: 2px solid #2e7d32; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #3e2723; }
-    .number-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ffffff; font-size: 22px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.7); background: rgba(0,0,0,0.5); padding: 4px; border-radius: 50%; }
+    .fallback {
+      width: 100%; height: 100%; border-radius: 50%; border: 2px solid #1827cd;
+      background: #f0f0f0; display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: #3e2723;
+    }
+    .number-overlay {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      color: #ffffff; font-size: 22px; font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.5); padding: 4px; border-radius: 50%;
+    }
   </style>
 </head>
 <body onclick="unlockAudio()">
   <video id="background-video" muted loop>
-    <source src="Firefly.MP4" type="video/mp4">
+    <source src="Firefly.mp4" type="video/mp4">
   </video>
 
   <h1>Pan & Apollo’s Wild Jukebox</h1>
   <p>Click anywhere to unlock audio, then crank away!</p>
 
   <select id="game" onchange="loadDataset()">
-    <option value="lotto">Lotto (6 from 1-52)</option>
-    <option value="plus1">Lotto Plus 1 (6 from 1-52)</option>
-    <option value="plus2">Lotto Plus 2 (6 from 1-52)</option>
+    <option value="lotto">Lotto (6 numbers, 1-52)</option>
+    <option value="plus1">Lotto Plus 1 (6 numbers, 1-52)</option>
+    <option value="plus2">Lotto Plus 2 (6 numbers, 1-52)</option>
     <option value="powerball">Powerball (5 from 1-50 + PB 1-16)</option>
     <option value="powerballplus">Powerball Plus (5 from 1-50 + PB 1-16)</option>
   </select>
@@ -71,51 +113,47 @@
   </footer>
 
   <script>
-    const words = ["breeze","storm","river","wave","cloud","rain","wind","mist","leaf","tree","branch","root","stone","cliff","hill","peak","valley","ridge","cave","rock","sand","dust","earth","sea","lake","pond","brook","fog","snow","ice","frost","dew","tide","shore","dune","field","plain","meadow","forest","grove","wood","glade","swamp","marsh","heath","moor","tundra","desert","jungle","savanna","prairie","canyon"];
+    const words = ["breeze","storm","river","wave","cloud","rain","wind","mist","leaf","tree","branch","root","stone","cliff","hill","peak","valley","ridge","cave","rock","sand","dust","earth","sea","lake","pond","brook","fog","snow","ice","frost","dew","tide","shore","dune","field","plain","meadow","forest","grove","wood","glade","swamp","marsh","heath","moor","tundra","desert","jungle","savanna","prairie","canyon","neil","Grok","justine","gerty","mac","yoko"];
 
-    const mp3Tunes = ["HARP.MP3", "HARP2.MP3", "FLUTE.MP3", "FLUTE2.MP3"];
+    const mp3Tunes = ["HARP.mp3", "HARP2.mp3", "FLUTE.mp3", "FLUTE2.mp3"];
     let currentAudio = null;
     let audioUnlocked = false;
     const backgroundVideo = document.getElementById("background-video");
 
-    // === UPDATED DATASETS (June 2026 - most recent first) ===
+    // === UPDATED DATASETS (June 2026 - recent draws) ===
     const defaultDatasets = {
       lotto: [
         ["15 16 17 18 25 33"], ["8 16 20 40 50 51"], ["5 8 19 30 44 46"],
-        ["21 35 39 46 51 56"], ["9 16 25 44 50 54"], ["2 8 15 32 50 51"],
+        ["21 35 39 46 51 52"], ["9 16 25 44 50 51"], ["2 8 15 32 50 52"],
         ["14 16 22 24 29 35"], ["4 8 12 18 28 38"], ["12 18 21 25 27 38"],
-        ["3 12 16 18 31 51"], ["2 3 17 27 29 37"], ["6 23 24 32 39 48"],
-        ["7 12 24 32 39 48"], ["7 19 23 27 31 52"], ["2 8 37 45 48 51"]
+        ["3 12 16 18 31 51"], ["2 3 17 27 29 37"], ["6 23 24 32 39 48"]
       ],
       plus1: [
-        ["11 12 35 44 45 46"], ["19 20 32 37 45 51"], ["9 16 25 44 50 54"],
-        ["5 31 46 47 55 58"], ["4 7 18 21 39 42"], ["3 26 33 38 39 41"],
-        ["10 15 17 27 29 47"], ["6 9 18 22 25 27"], ["33 36 38 40 46 49"],
-        ["2 3 10 20 27 44"], ["8 21 22 39 47 52"], ["3 14 20 30 35 42"]
+        ["11 12 35 44 45 46"], ["19 20 32 37 45 51"], ["9 16 25 44 50 52"],
+        ["5 31 46 47 50 52"], ["4 7 18 21 39 42"], ["3 26 33 38 39 41"],
+        ["10 15 17 27 29 47"], ["6 9 18 22 25 27"], ["33 36 38 40 46 49"]
       ],
       plus2: [
         ["2 10 19 24 38 41"], ["7 33 34 38 40 47"], ["1 3 5 13 18 22"],
         ["8 19 23 38 40 42"], ["1 4 10 13 28 33"], ["8 14 16 42 43 52"],
-        ["1 10 23 29 34 47"], ["4 8 27 31 35 43"], ["25 26 31 33 34 45"],
-        ["3 23 27 44 45 47"], ["1 8 14 21 26 29"], ["9 25 33 37 40 51"]
+        ["1 10 23 29 34 47"], ["4 8 27 31 35 43"], ["25 26 31 33 34 45"]
       ],
       powerball: [
         ["5 8 12 19 48 1"], ["2 16 33 37 43 6"], ["2 10 22 28 49 7"],
         ["9 14 16 25 30 14"], ["1 9 30 31 47 3"], ["6 8 16 22 25 18"],
-        ["14 23 31 33 38 7"], ["4 7 11 24 39 3"], ["15 16 37 43 44 11"],
-        ["2 4 5 19 31 15"], ["4 6 15 20 50 3"], ["2 26 30 42 47 3"]
+        ["14 23 31 33 38 7"], ["4 7 11 24 39 3"], ["15 16 37 43 44 11"]
       ],
       powerballplus: [
         ["19 32 40 45 48 11"], ["4 12 27 35 41 15"], ["2 23 44 48 50 14"],
         ["13 27 29 36 37 10"], ["6 8 13 37 45 7"], ["10 16 20 41 49 7"],
-        ["17 38 45 46 50 16"], ["2 16 19 27 42 17"], ["1 14 17 31 49 2"],
-        ["6 23 27 29 45 16"], ["2 22 23 46 49 19"], ["6 20 38 44 46 8"]
+        ["17 38 45 46 50 16"], ["2 16 19 27 42 17"], ["1 14 17 31 49 2"]
       ]
     };
 
     let datasets = JSON.parse(localStorage.getItem('jukeboxDatasets')) || defaultDatasets;
     const originalDatasets = JSON.parse(JSON.stringify(defaultDatasets));
 
+    // New cycles for 1-52 / 1-50
     const fifthsCycle52 = [1,8,15,22,29,36,43,50,5,12,19,26,33,40,47,2,9,16,23,30,37,44,51,6,13,20,27,34,41,48,3,10,17,24,31,38,45,52,7,14,21,28,35,42,49,4,11,18,25,32,39,46];
     const fifthsCycle50 = fifthsCycle52.slice(0, 50);
     const octavePositions = Array(53).fill(0).map((_, i) => i ? ((i - 1) % 12) + 1 : 0);
@@ -128,7 +166,10 @@
     function unlockAudio() {
       if (!audioUnlocked) {
         const context = new (window.AudioContext || window.webkitAudioContext)();
-        context.resume().then(() => { audioUnlocked = true; document.getElementById("output").innerHTML = "Audio unlocked! Ready to crank!"; }).catch(() => {});
+        context.resume().then(() => {
+          audioUnlocked = true;
+          document.getElementById("output").innerHTML = "Audio unlocked! Ready to crank!";
+        });
       }
     }
 
@@ -141,16 +182,22 @@
     function addDraw() {
       const game = document.getElementById("game").value;
       const input = document.getElementById("newNumbers").value.trim();
-      if (!input) { alert("Enter numbers!"); return; }
+      if (!input) { alert("Please enter numbers!"); return; }
 
       const nums = input.split(" ").map(Number);
       const isPB = game.includes("powerball");
 
       if (isPB) {
-        if (nums.length !== 6 || nums.some(isNaN)) { alert("Exactly 6 numbers for Powerball!"); return; }
-        if (nums.slice(0,5).some(n => n<1||n>50) || nums[5]<1 || nums[5]>16) { alert("Main 1-50 | PB 1-16"); return; }
+        if (nums.length !== 6 || nums.some(isNaN)) { alert("Powerball needs exactly 6 numbers!"); return; }
+        if (nums.slice(0,5).some(n => n<1 || n>50) || nums[5]<1 || nums[5]>16) {
+          alert("Main numbers 1-50, Powerball 1-16");
+          return;
+        }
       } else {
-        if (nums.length !== 6 || nums.some(n => n<1||n>52||isNaN(n))) { alert("Exactly 6 numbers 1-52!"); return; }
+        if (nums.length !== 6 || nums.some(n => n<1 || n>52 || isNaN(n))) {
+          alert("Lotto needs exactly 6 numbers from 1-52!");
+          return;
+        }
       }
 
       datasets[game].unshift([input]);
@@ -166,7 +213,9 @@
         datasets[game].shift();
         saveDatasets();
         loadDataset();
-      } else alert("Nothing to rollback!");
+      } else {
+        alert("Nothing to rollback!");
+      }
     }
 
     function predictNextDraw(game) {
@@ -177,7 +226,6 @@
       const freq = Array(maxMain + 1).fill(0);
       const pbFreq = isPowerball ? Array(maxPB + 1).fill(0) : null;
 
-      // Weighting: older ×1, newest 5 ×2
       draws.slice(5).forEach(([str]) => {
         const n = str.split(" ").map(Number);
         if (isPowerball) {
@@ -195,14 +243,15 @@
 
       const cycle = isPowerball ? fifthsCycle50 : fifthsCycle52;
       const candidates = cycle.map(num => ({
-        num, freq: freq[num],
+        num,
+        freq: freq[num],
         isMajor: isMajor(octavePositions[num]),
         score: freq[num] + (isMajor(octavePositions[num]) ? 1 : 0)
       }));
 
       if (isPowerball) {
         const mains = candidates.sort((a,b)=>b.score-a.score).slice(0,5).map(x=>x.num).sort((a,b)=>a-b);
-        const pb = Array.from({length:maxPB},(_,i)=>i+1).sort((a,b)=>(pbFreq[b]||0)-(pbFreq[a]||0))[0];
+        const pb = Array.from({length: maxPB}, (_,i)=>i+1).sort((a,b)=>(pbFreq[b]||0)-(pbFreq[a]||0))[0];
         return [...mains, pb];
       } else {
         const majors = candidates.filter(x=>x.isMajor).sort((a,b)=>b.score-a.score).slice(0,3).map(x=>x.num);
@@ -212,63 +261,86 @@
     }
 
     function displayPredictionImages(predictedNums) {
-      const left = document.getElementById("left-side");
-      const right = document.getElementById("right-side");
-      left.innerHTML = ""; right.innerHTML = "";
+      const leftSide = document.getElementById("left-side");
+      const rightSide = document.getElementById("right-side");
+      leftSide.innerHTML = ""; rightSide.innerHTML = "";
 
-      predictedNums.forEach((num, i) => {
+      predictedNums.forEach((num, index) => {
         setTimeout(() => {
-          const div = document.createElement("div");
-          div.className = "prediction-image";
+          const word = words[num - 1] || "unknown";
+          const imageDiv = document.createElement("div");
+          imageDiv.className = "prediction-image";
 
           const img = document.createElement("img");
-          img.src = `${words[num-1]}.jpg`;
-          img.style.width = img.style.height = "100%";
-          img.style.borderRadius = "50%";
-          img.style.objectFit = "cover";
-          img.onerror = () => { img.style.display="none"; const f=document.createElement("div"); f.className="fallback"; f.textContent=words[num-1]; div.appendChild(f); };
-          div.appendChild(img);
+          img.src = `${word}.jpg`;
+          img.style.width = "100%"; img.style.height = "100%";
+          img.style.borderRadius = "50%"; img.style.objectFit = "cover";
+
+          img.onerror = () => {
+            img.style.display = "none";
+            const fallback = document.createElement("div");
+            fallback.className = "fallback";
+            fallback.textContent = word;
+            imageDiv.appendChild(fallback);
+          };
+
+          imageDiv.appendChild(img);
 
           const overlay = document.createElement("div");
           overlay.className = "number-overlay";
           overlay.textContent = num;
-          div.appendChild(overlay);
+          imageDiv.appendChild(overlay);
 
-          (i < 3 ? left : right).appendChild(div);
-          setTimeout(() => div.classList.add("visible"), 50);
-        }, i * 800);
+          (index < 3 ? leftSide : rightSide).appendChild(imageDiv);
+          setTimeout(() => imageDiv.classList.add("visible"), 50);
+        }, index * 800);
       });
     }
 
     async function crankJukebox() {
-      if (!audioUnlocked) { document.getElementById("output").innerHTML = "Click page to unlock audio!"; return; }
+      if (!audioUnlocked) {
+        document.getElementById("output").innerHTML = "Click the page to unlock audio!";
+        return;
+      }
 
       const game = document.getElementById("game").value;
       const output = document.getElementById("output");
-      const predText = document.getElementById("prediction-text");
+      const predictionText = document.getElementById("prediction-text");
       output.innerHTML = "";
 
-      // Audio + Video (your original logic kept)
       if (currentAudio) currentAudio.pause();
-      const tune = mp3Tunes[Math.floor(Math.random()*mp3Tunes.length)];
-      currentAudio = new Audio(tune);
-      currentAudio.play();
-      backgroundVideo.style.display = "block";
-      backgroundVideo.play();
+      if (backgroundVideo) {
+        backgroundVideo.pause();
+        backgroundVideo.style.display = "none";
+      }
 
-      setTimeout(() => { if(currentAudio) currentAudio.pause(); backgroundVideo.style.display="none"; }, 15000);
+      const randomTune = mp3Tunes[Math.floor(Math.random() * mp3Tunes.length)];
+      currentAudio = new Audio(randomTune);
 
-      // Display recent tunes
-      const data = datasets[game].slice(0,6);
+      try {
+        await currentAudio.play();
+        backgroundVideo.style.display = "block";
+        backgroundVideo.play().catch(() => {});
+      } catch(e) {}
+
+      setTimeout(() => {
+        if (currentAudio) currentAudio.pause();
+        if (backgroundVideo) backgroundVideo.style.display = "none";
+      }, 15000);
+
+      // Show recent draws as tunes
+      const data = datasets[game].slice(0, 6);
       data.forEach(([nums]) => {
-        const tuneLine = nums.split(" ").map(n => words[n-1]).join(" ");
-        const div = document.createElement("div"); div.className="tune-line"; div.textContent = tuneLine; output.appendChild(div);
+        const tune = nums.split(" ").map(n => words[n-1] || n).join(" ");
+        const div = document.createElement("div");
+        div.className = "tune-line";
+        div.textContent = tune;
+        output.appendChild(div);
       });
 
-      // Predict & show
-      const predicted = predictNextDraw(game);
-      predText.textContent = predicted.join(" ");
-      displayPredictionImages(predicted);
+      const predictedNums = predictNextDraw(game);
+      predictionText.textContent = predictedNums.join(" ");
+      displayPredictionImages(predictedNums);
     }
 
     loadDataset();
